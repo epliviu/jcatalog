@@ -13,4 +13,8 @@ public interface SiteManagerCatalogInterface {
 	 * prints to console all trainees with their average grade
 	 */
 	void printCatalog();
+	/**
+	 * Start training.
+	 */
+	void startTraining(Trainer trainer);
 }

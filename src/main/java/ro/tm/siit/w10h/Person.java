@@ -46,17 +46,13 @@ abstract class Person implements FeedbackSender {
 	 * 
 	 * @param person
 	 */
-	public void sendFeedback(Person person) throws IllegalArgumentException{
-		try{
-			if(this.equals(person)){
-				throw new IllegalArgumentException("You cannot send message to your self!");
-			}
-			if(person instanceof Trainee){
-				throw new IllegalArgumentException("You cannot send message to trainee!");
-			}
-			messenger.sendMessage(person.getMail(), "Feedback", "My Note is not nice...");
-		}catch (Exception e){
-			System.out.println("Exceptions: "+ e.getMessage());
+	public void sendFeedback(Person person) throws IllegalArgumentException {
+		if (this.equals(person)) {
+			throw new IllegalArgumentException("You cannot send message to your self!");
 		}
+		if (person instanceof Trainee) {
+			throw new IllegalArgumentException("You cannot send message to trainee!");
+		}
+		messenger.sendMessage(person.getMail(), "Feedback", "My Note is not nice...");
 	}
 }

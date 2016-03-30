@@ -3,6 +3,8 @@
  */
 package ro.tm.siit.w10h;
 
+import java.util.List;
+
 /**
  * @author nicolicioiul
  *
@@ -15,13 +17,14 @@ public class TrainerApp {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Messenger messenger = new SimpleMessenger();
+		Messenger messenger = SimpleMessenger.getInstance();
 		
-		Catalog catalog = new Catalog("Java S2", messenger,
+		Catalog catalog =  Catalog.getInstance("Java S2", messenger,
 				new Trainee("florin", "nicolicioiu.liviu3@enode.ro", messenger),
 				new Trainee("radu", "nicolicioiu.liviu1@enode.ro", messenger),
 				new Trainee("andrei", "nicolicioiu.liviu3@enode.ro", messenger),
 				new Trainee("ciprian", "nicolicioiu.liviu2@enode.ro", messenger));
+		
 		TrainerCatalogInterface trainerCatalog = catalog;
 		Trainer trainer = new Trainer("madalin", "nicolicioiu.liviu2@enode.ro", messenger);
 		
@@ -31,14 +34,15 @@ public class TrainerApp {
 		SiteManagerCatalogInterface siteManagerinterface = catalog;
 		work(siteManagerinterface);
 		// Send feedback for all grades for radu.
-		int[] grades = catalog.getGrades("radu");
+		List<Integer> grades = catalog.getGrades("radu");
 		if (grades != null) {
 			Trainee trainee = catalog.getTrainee("radu");
 			for (int grade : grades) {
 				try{
 					trainee.sendFeedback(grade, trainer);
 				}catch(Exception e){
-					ExceptionHandler(e);
+					System.out.println("Exception:"+e.getMessage());
+					e.printStackTrace();
 				}
 			}
 		}
@@ -48,16 +52,9 @@ public class TrainerApp {
 			catalog.getTrainee("radu").sendFeedbackLastGrade(catalog.getTrainee("radu"));
 			catalog.getTrainee("radu").sendFeedbackLastGrade(siteManager);
 		}catch(Exception e){
-			ExceptionHandler(e);
+			System.out.println("Exception:"+e.getMessage());
+			e.printStackTrace();
 		}
-	}
-	/**
-	 * Custom exception handler
-	 * @param e
-	 */
-	private static void ExceptionHandler(Exception e){
-		System.out.println("Exception:");
-		e.printStackTrace();
 	}
 	/**
 	 * the trainer works with the catalog

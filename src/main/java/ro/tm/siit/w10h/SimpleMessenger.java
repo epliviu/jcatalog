@@ -8,6 +8,22 @@ package ro.tm.siit.w10h;
  *
  */
 public class SimpleMessenger implements Messenger {
+	/**
+	 * Lock the constructor
+	 */
+	private SimpleMessenger() {
+
+	}
+
+	/**
+	 * get instance
+	 * 
+	 * @return messenger
+	 */
+	public static SimpleMessenger getInstance() {
+		SimpleMessenger messenger = new SimpleMessenger();
+		return messenger;
+	}
 
 	/**
 	 * Implement sending message
@@ -20,7 +36,7 @@ public class SimpleMessenger implements Messenger {
 	 *            String
 	 * @return boolean
 	 */
-	public boolean sendMessage(String mail, String subject, String message){
+	public boolean sendMessage(String mail, String subject, String message) {
 		System.out.println("Send simple messenger message:");
 		System.out.println("To:" + mail);
 		System.out.println("Subject:" + subject);

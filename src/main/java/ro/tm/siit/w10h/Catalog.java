@@ -1,6 +1,11 @@
 
 package ro.tm.siit.w10h;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
 /**
  * Catalog class implements TrainerCatalogInterface interface and model a grades
  * catalog for Scoala Informala de IT.
@@ -8,64 +13,95 @@ package ro.tm.siit.w10h;
  * @author mcosma
  *
  */
-public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface{
+final public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface {
 
-	private TraineeGrades[] trainees = new TraineeGrades[15];
-	private int traineesCount;
+	private Map<String, TraineeGrades> trainees = new HashMap<String, TraineeGrades>();
 	private String name;
 	private Messenger messenger;
-
+	private Trainer trainer;
+	private static Catalog singleInstance;
+	private int gradesCount = 0; 
 	/**
 	 * @param name
 	 *            the name of the training
 	 * @param trainees
 	 *            the trainees
 	 */
-	public Catalog(String name, Messenger messenger, Trainee... trainees) {
+	private Catalog(String name, Messenger messenger, Trainee... trainees) {
 		super();
 		this.name = name;
 		TraineeCatalogInterface traineeCatalogInterface = this;
 		for (Trainee t : trainees) {
-			t.setTraineeCatalogInterface(traineeCatalogInterface);
-			this.trainees[traineesCount++] = new TraineeGrades(t);
+			addTrainee(t, traineeCatalogInterface);
 		}
 		this.messenger = messenger;
 	}
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see rro.tm.siit.w10h.TraineeCatalogInterface#
-	 * addGrade(java.lang.String, int)
+	/**
+	 * Add a trainee to catalog
+	 * @param trainee
+	 * @param traineeCatalogInterface
+	 * @throws IllegalStateException
 	 */
-	public int getLastGrade(String name){
-		TraineeGrades participant = find(name);
-		if(participant.gradeCount > 0){
-			return participant.grades[participant.gradeCount-1];
+	public void addTrainee(Trainee trainee, TraineeCatalogInterface traineeCatalogInterface) throws IllegalStateException{
+		if(!canAddTrainee()){
+			throw new IllegalStateException();
 		}
-		return 0;
+		trainee.setTraineeCatalogInterface(traineeCatalogInterface);
+		this.trainees.put(trainee.getName(), new TraineeGrades(trainee));
 	}
-	/*
-	 * (non-Javadoc)
+	/**
 	 * 
-	 * @see ro.tm.siit.w10h.TrainerCatalogInterface#
-	 * addGrade(java.lang.String, int)
+	 * @param name
+	 * @param messenger
+	 * @param trainees
+	 * @return
 	 */
-	public void addGrade(String name, int grade, Trainer trainer) {
-		TraineeGrades participant = find(name);
-		participant.addGrade(grade);
-		try{
-			messenger.sendMessage(participant.trainee.getMail(), "New grade:" + grade,
-					"New grade from:" + trainer.getName());
-		}catch(Exception e){
-			
+	public static Catalog getInstance(String name, Messenger messenger, Trainee... trainees) {
+		if (singleInstance == null) {
+			singleInstance = new Catalog(name, messenger, trainees);
 		}
+		return singleInstance;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * ro.tm.siit.w10h.SiteManagerCatalogInterface#
+	 * @see rro.tm.siit.w10h.TraineeCatalogInterface# addGrade(java.lang.String,
+	 * int)
+	 */
+	public int getLastGrade(String name) throws IllegalStateException{
+		TraineeGrades participant = find(name);
+		if (participant != null && !participant.grades.isEmpty()) {
+			return participant.grades.get(participant.grades.size() - 1);
+		}
+		throw new IllegalStateException();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ro.tm.siit.w10h.TrainerCatalogInterface# addGrade(java.lang.String,
+	 * int)
+	 */
+	public void addGrade(String name, int grade, Trainer trainer) throws IllegalStateException{
+		TraineeGrades participant = find(name);
+		if(participant == null){
+			throw new IllegalStateException();
+		}
+		if(trainingStarted()){
+			throw new IllegalStateException();
+		}
+		// Inc grades
+		gradesCount++;
+		participant.addGrade(grade);
+			messenger.sendMessage(participant.trainee.getMail(), "New grade:" + grade,
+					"New grade from:" + trainer.getName());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see ro.tm.siit.w10h.SiteManagerCatalogInterface#
 	 * printGrades(java.lang.String)
 	 */
 	public void printGrades(String name) {
@@ -76,16 +112,14 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see ro.tm.siit.w10h.TrainerCatalogInterface#
-	 * getGrades(java.lang.String)
+	 * @see ro.tm.siit.w10h.TrainerCatalogInterface# getGrades(java.lang.String)
 	 */
-	public int[] getGrades(String name) {
+	public List<Integer> getGrades(String name) throws IllegalArgumentException {
 		TraineeGrades participant = find(name);
-		int[] completedGrades = new int[participant.gradeCount];
-		for(int i=0;i<participant.gradeCount;i++){
-			completedGrades[i] = participant.grades[i];
+		if (participant == null) {
+			throw new IllegalArgumentException();
 		}
-		return completedGrades;
+		return participant.grades;
 	}
 
 	/*
@@ -94,24 +128,24 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 	 * 
 	 * getTrainee(java.lang.String)
 	 */
-	public Trainee getTrainee(String name) {
+	public Trainee getTrainee(String name) throws IllegalArgumentException {
 		TraineeGrades participant = find(name);
+		if (participant == null) {
+			throw new IllegalArgumentException();
+		}
 		return participant.trainee;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * ro.tm.siit.w10h.SiteManagerCatalogInterface#
-	 * printCatalog()
+	 * @see ro.tm.siit.w10h.SiteManagerCatalogInterface# printCatalog()
 	 */
 	public void printCatalog() {
-		System.out.println("Catalog " + name + " has " + trainees.length + " trainees");
-		for (TraineeGrades t : trainees) {
-			if (t != null) {
-				System.out.println(t.trainee.getName() + " " + t.getAvgGrade());
-			}
+		System.out.println("Catalog " + name + " has " + trainees.size() + " trainees");
+		for (String key : trainees.keySet()) {
+			TraineeGrades t = trainees.get(key);
+			System.out.println(t.trainee.getName() + " " + t.getAvgGrade());
 		}
 	}
 
@@ -122,7 +156,7 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 	 */
 	@Override
 	public String toString() {
-		return "Catalog " + name + " has " + trainees.length + " trainees";
+		return "Catalog " + name + " has " + trainees.size() + " trainees";
 	}
 
 	/**
@@ -133,18 +167,15 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 	 * @return a Trainee object or null if not found
 	 */
 	private TraineeGrades find(String name) {
-		for (TraineeGrades t : trainees) {
-			if (t.trainee.getName().equals(name)) {
-				return t;
-			}
+		if (trainees.containsKey(name)) {
+			return trainees.get(name);
 		}
 		return null;
 	}
 
 	private class TraineeGrades {
 		private Trainee trainee;
-		private int[] grades = new int[10];
-		private int gradeCount = 0;
+		private List<Integer> grades = new ArrayList<Integer>();
 
 		public TraineeGrades(Trainee trainee) {
 			super();
@@ -156,7 +187,7 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 		 *            adds a new grade to trainee
 		 */
 		public void addGrade(int grade) {
-			this.grades[gradeCount++] = grade;
+			this.grades.add(grade);
 		}
 
 		/**
@@ -164,10 +195,13 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 		 */
 		public float getAvgGrade() {
 			int sum = 0;
-			for (int i = 0; i < gradeCount; i++) {
-				sum += grades[i];
+			if (grades.size() == 0) {
+				return sum;
 			}
-			return ((float) sum) / gradeCount;
+			for (int i : grades) {
+				sum += i;
+			}
+			return ((float) sum) / grades.size();
 		}
 
 		/*
@@ -178,11 +212,45 @@ public class Catalog implements TrainerCatalogInterface, TraineeCatalogInterface
 		@Override
 		public String toString() {
 			String out = trainee.getName() + " : ";
-			for (int i = 0; i < gradeCount; i++) {
-				out += grades[i] + " ";
+			for (int i : grades) {
+				out += i + " ";
 			}
 			return out;
 		}
 	}
 
+	/**
+	 * Start training.
+	 * 
+	 * @param Trainer
+	 *            trainer
+	 */
+	public void startTraining(Trainer trainer) throws IllegalStateException {
+		if (trainingStarted()) {
+			throw new IllegalStateException();
+		}
+		this.trainer = trainer;
+	}
+
+	/**
+	 * Check if training started
+	 * 
+	 * @return boolean
+	 */
+	public boolean trainingStarted() {
+		if (this.trainer == null) {
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * Check if can be added an trainee
+	 * @return boolean
+	 */
+	public boolean canAddTrainee(){
+		if(!trainingStarted() && gradesCount == 0){
+			return true;
+		}
+		return false;
+	}
 }

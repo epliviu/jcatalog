@@ -1,40 +1,31 @@
 package ro.tm.siit.w10h;
-/**
- * 
- * @author nicolicioiul
- *
- */
+
 public enum FeedbackType {
-	/**
-	 * Feedback for grade 10,9
-	 */
-	feedback1("Good boy, greate grade!"),
-	/**
-	 * Feedback for grade 8,7
-	 */	
-	feedback2("Ups, your grade is between 8 and 7."),
-	/**
-	 * Feedback for grade 7, 6, 5, 4, 3, 2, 1 ...
-	 */	
-	feedback3("Ups, bad boy, your grade is under 7!");
-	private String message;
-	private String subject = "Feedback message";
-	FeedbackType(String message){
-		this.message = message;
-	}
-	/**
-	 * 
-	 * @return subject
-	 */
-	public String getSubject(){
-		return subject;
+
+	HighSatistfaction((byte) 9, "I'm very happy. 10x!!!"), 
+	AverageSatisfaction((byte) 7, "I suppose it is ok."), 
+	BelowSatisfaction((byte) 0, "Not happy with my rating!");
+
+	private byte minGrade;
+	private String feedbackMsg;
+
+	private FeedbackType(byte minGrade, String feedbackMsg) {
+		this.minGrade = minGrade;
+		this.feedbackMsg = feedbackMsg;
 	}
 
-	/**
-	 * 
-	 * @return message
-	 */
-	public String getMessage(){
-		return message;
+	public String getMessage() {
+		return feedbackMsg;
 	}
+
+	public static FeedbackType valueOfGrade(int grade) {
+		for (FeedbackType type : values()) {
+			if (grade >= type.minGrade) {
+				return type;
+			}
+		}
+		throw new IllegalArgumentException("no FeedbackType for " + grade);
+	}
+
 }
+

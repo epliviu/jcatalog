@@ -3,8 +3,6 @@
  */
 package ro.tm.siit.w10h;
 
-import java.util.ArrayList;
-
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -22,6 +20,26 @@ import javax.mail.internet.MimeMessage;
  */
 public class EmailMessenger implements Messenger {
 	private Session session;
+	private static EmailMessenger singleInstance;
+
+	/**
+	 * Lock the constructor
+	 */
+	private EmailMessenger() {
+
+	}
+
+	/**
+	 * get instance
+	 * 
+	 * @return messenger
+	 */
+	public static EmailMessenger getInstance() {
+		if(singleInstance == null){
+			singleInstance = new EmailMessenger();
+		}
+		return singleInstance;
+	}
 
 	/**
 	 * Implement sending message
@@ -31,7 +49,7 @@ public class EmailMessenger implements Messenger {
 	 * @param message
 	 * @return boolean
 	 */
-	public boolean sendMessage(String mail, String subject, String message){
+	public boolean sendMessage(String mail, String subject, String message) {
 		try {
 			Message mimeMessage = new MimeMessage(session);
 			mimeMessage.setRecipients(Message.RecipientType.TO, InternetAddress.parse(mail));
