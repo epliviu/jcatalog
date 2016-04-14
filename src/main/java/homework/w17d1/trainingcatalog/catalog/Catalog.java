@@ -1,9 +1,7 @@
-
-package ro.tm.siit.w10h;
 /**
  * 
  */
-package ro.tm.siit.homework.w17d1.trainingcatalog.catalog;
+package homework.w17d1.trainingcatalog.catalog;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -13,6 +11,13 @@ import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import homework.w17d1.trainingcatalog.Messenger;
+import homework.w17d1.trainingcatalog.SiteManagerCatalogInterface;
+import homework.w17d1.trainingcatalog.TraineeCatalogInterface;
+import homework.w17d1.trainingcatalog.TrainerCatalogInterface;
+import homework.w17d1.trainingcatalog.person.Trainee;
+import homework.w17d1.trainingcatalog.person.Trainer;
 
 /**
  * Catalog class implements TrainerCatalogInterface interface and model a grades
@@ -49,6 +54,18 @@ public final class Catalog
 		this.messenger = messenger;
 	}
 
+	/**
+	 * @param name
+	 *            the name of the training
+	 */
+	public Catalog(String name) {
+		super();
+		this.name = name;
+	}
+	/**
+	 * set messenger
+	 * @param messenger
+	 */
 	public void setMessenger(Messenger messenger) {
 		this.messenger = messenger;
 		for (Trainee t : trainees.keySet()) {
@@ -68,7 +85,6 @@ public final class Catalog
 		}
 		this.trainees.put(t, new ArrayList<Integer>());
 	}
-
 	@Override
 	public void startTraining(Trainer trainer) {
 		this.status = Status.STARTED;
@@ -142,10 +158,11 @@ public final class Catalog
 		model.setColumnCount(0);
 		model.setRowCount(0);
 		model.addColumn("Name");
+		model.addColumn("Mail");
 		model.addColumn("Avg Grade");
 		int row = 0;
 		for (Trainee trainee : trainees.keySet()) {
-			Object[] rowData = new Object[] { trainee.getName(), getAvgGrade(trainee) };
+			Object[] rowData = new Object[] { trainee.getName(), trainee.getEmail(), getAvgGrade(trainee) };
 			model.addRow(rowData);
 			row++;
 		}
@@ -200,7 +217,7 @@ public final class Catalog
 		for (Integer i : list) {
 			sum += i;
 		}
-		return ((float) sum) / list.size();
+		return sum > 0 ? ((float) sum) / list.size(): 0;
 	}
 
 	/**
@@ -217,12 +234,6 @@ public final class Catalog
 			out += i + " ";
 		}
 		return out;
-	}
-
-	@Override
-	public void addGrade(String student, int grade, Trainer trainer) {
-		// TODO Auto-generated method stub
-		
 	}
 
 }
