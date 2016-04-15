@@ -14,6 +14,9 @@ public abstract class Person implements FeedbackSender, Serializable {
 	protected transient Messenger messenger;
 
 	public Person(String name, String email, Messenger messenger) {
+		if(name.length() ==0 ){
+			throw new IllegalArgumentException("Invalid name");
+		}
 		this.name = name;
 		this.email = email;
 		this.messenger = messenger;

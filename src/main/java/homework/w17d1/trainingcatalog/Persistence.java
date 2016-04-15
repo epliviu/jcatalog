@@ -42,9 +42,12 @@ public class Persistence {
 				System.out.println("problem loading catalog data " + e.getMessage());
 			}
 		}
+		// if is null, create a new one.
 		if(catalog == null){
+			System.out.println("new one");
 			catalog = new Catalog("");
 		}
+		catalog = new Catalog("");
 		return catalog;
 	}
 

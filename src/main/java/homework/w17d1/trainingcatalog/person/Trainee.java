@@ -40,7 +40,7 @@ public class Trainee extends Person {
 		String text = feedback.getMessage();
 		messenger.sendMessage(to.getEmail(), subject, text);
 	}
-	
+
 	public int getLastGrade() {
 		return traineeInterface.getLastGrade(this.getName());
 	}

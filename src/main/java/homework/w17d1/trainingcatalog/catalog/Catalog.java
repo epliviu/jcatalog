@@ -11,7 +11,7 @@ import java.util.Map;
 
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-
+import homework.w17d1.trainingcatalog.Status;
 import homework.w17d1.trainingcatalog.Messenger;
 import homework.w17d1.trainingcatalog.SiteManagerCatalogInterface;
 import homework.w17d1.trainingcatalog.TraineeCatalogInterface;
@@ -29,9 +29,6 @@ import homework.w17d1.trainingcatalog.person.Trainer;
 public final class Catalog
 		implements SiteManagerCatalogInterface, TrainerCatalogInterface, TraineeCatalogInterface, Serializable {
 
-	private enum Status {
-		CREATED, STARTED, FINISHED
-	};
 
 	private Map<Trainee, List<Integer>> trainees = new HashMap<Trainee, List<Integer>>();
 	private String name;
@@ -87,12 +84,18 @@ public final class Catalog
 	}
 	@Override
 	public void startTraining(Trainer trainer) {
+		if (status != Status.CREATED) {
+			throw new IllegalStateException("training cannot be started");
+		}
 		this.status = Status.STARTED;
 		this.trainer = trainer;
 	}
 
 	@Override
 	public void stopTraining() {
+		if (status != Status.STARTED) {
+			throw new IllegalStateException("training cannot be finished");
+		}
 		this.status = Status.FINISHED;
 
 	}
@@ -234,6 +237,13 @@ public final class Catalog
 			out += i + " ";
 		}
 		return out;
+	}
+	/**
+	 * Get catalog status
+	 * @return
+	 */
+	public Status getStatus(){
+		return this.status;
 	}
 
 }

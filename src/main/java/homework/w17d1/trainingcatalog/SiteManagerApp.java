@@ -35,29 +35,30 @@ public class SiteManagerApp {
 	 */
 	public static void main(String[] args) {
 
-		final Messenger messenger = SimpleMessenger.getInstance();
-		final Persistence storage = new Persistence();
-		final Catalog catalog = storage.loadCatalog();
+		Messenger messenger = SimpleMessenger.getInstance();
+		Persistence storage = new Persistence();
+		Catalog catalog = storage.loadCatalog();
 		catalog.setMessenger(messenger);
-		final SiteManagerCatalogInterface siteManagerInterface = catalog;
-		final TraineeCatalogInterface traineeCatalogInterface = catalog;
-		final SiteManager siteManager = new SiteManager("Diana", "diana.tataran@gmail.com", siteManagerInterface, messenger);
-		
+		SiteManagerCatalogInterface siteManagerInterface = catalog;
+		TraineeCatalogInterface traineeCatalogInterface = catalog;
+		TrainerCatalogInterface trainerCatalogInterface = catalog;
+		SiteManager siteManager = new SiteManager("Diana", "diana.tataran@gmail.com", siteManagerInterface, messenger);
+
 		// create the GUI and handle events in EDT
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
-				createGUI(catalog, messenger, siteManager, traineeCatalogInterface);
+				createGUI(catalog, messenger, siteManager, traineeCatalogInterface, trainerCatalogInterface);
 			}
 		});
 
 	}
-
+	
 	private static void save(Catalog catalog) {
 		Persistence storage = new Persistence();
 		storage.saveCatalog(catalog);
-		
+
 	}
 
 	/**
@@ -68,31 +69,29 @@ public class SiteManagerApp {
 	 * @param siteManager
 	 * @param trainer
 	 */
-	private static void createGUI(final Catalog catalog, final Messenger messenger, final SiteManager siteManager, final TraineeCatalogInterface traineeCatalogInterface ) {
+	private static void createGUI(Catalog catalog,  Messenger messenger,  SiteManager siteManager,  TraineeCatalogInterface traineeCatalogInterface, TrainerCatalogInterface trainerCatalogInterface) {
 		JFrame window = new JFrame("Trainee");
-		window.setSize(800, 400);
+		window.setSize(900, 500);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		window.getContentPane().setLayout(new GridLayout(2, 1));
+		window.getContentPane().setLayout(new GridLayout(3,2));
 		JPanel manageTraineePanel = createManageTraineePanel(catalog, siteManager, messenger, traineeCatalogInterface);
 		window.add(manageTraineePanel);
-		
-		window.getContentPane().setLayout(new GridLayout(2, 1));
-		JPanel manageCatalogPanel = createManageCatalogPanel(catalog, siteManager, messenger);
-		window.add(manageCatalogPanel);		
-		
-		
+
+
 		JPanel traineeGradesAndCatalogPanel = new JPanel();
-		window.add(traineeGradesAndCatalogPanel);
 		traineeGradesAndCatalogPanel.setLayout(new GridLayout(1, 2));
-		
-//		JPanel viewGradesPanel = createViewGradesPanel(trainer);
-//		traineeGradesAndCatalogPanel.add(viewGradesPanel);
-		
+		window.add(traineeGradesAndCatalogPanel);
+
+
 		//creates display catalog panel
 		JPanel catalogPanel = createCatalogPanel(siteManager);
 		traineeGradesAndCatalogPanel.add(catalogPanel);
-		
+
+		JPanel manageCatalogPanel = createManageCatalogPanel(catalog, trainerCatalogInterface, messenger);
+		window.add(manageCatalogPanel);		
+
+
 		// listeners that saves catalog on exit
 		window.addWindowListener(new WindowAdapter() {
 
@@ -100,24 +99,28 @@ public class SiteManagerApp {
 			public void windowClosing(WindowEvent e) {
 				save(catalog);
 			}
-			
+
 		});
 
 		window.setVisible(true);
 	}
-
-	private static JPanel createCatalogPanel(final SiteManager siteManager) {
+	/**
+	 * Create catalog list of trainee
+	 * @param siteManager
+	 * @return JPanel
+	 */
+	private static JPanel createCatalogPanel( SiteManager siteManager) {
 		JPanel catalogPanel = new JPanel();
 		catalogPanel.setLayout(new GridLayout(2,1));
 		JButton nameBtn = new JButton("View catalog");
 		catalogPanel.add(nameBtn);
-		final JTable catalog = new JTable();
+		JTable catalog = new JTable();
 		nameBtn.addActionListener(new ActionListener() {
-			
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				siteManager.displayCatalog(catalog);
-				
+
 			}
 		});
 		JScrollPane scrollPane = new JScrollPane(catalog);
@@ -125,32 +128,40 @@ public class SiteManagerApp {
 		catalogPanel.add(scrollPane);
 		return catalogPanel;
 	}
-
-	private static JPanel createManageTraineePanel(Catalog catalog, final SiteManager siteManager, final Messenger messenger, final TraineeCatalogInterface traineeCatalogInterface) {
-		final JPanel manageTrainee = new JPanel();
+	/**
+	 * Create manage train
+	 * @param catalog
+	 * @param siteManager
+	 * @param messenger
+	 * @param traineeCatalogInterface
+	 * @return JPanel
+	 */
+	private static JPanel createManageTraineePanel(Catalog catalog,  SiteManager siteManager,  Messenger messenger,  TraineeCatalogInterface traineeCatalogInterface) {
+		JPanel manageTrainee = new JPanel();
 		manageTrainee.setLayout(new GridLayout(1,5));
-		JLabel nameLabel = new JLabel("Name ");
+		JLabel nameLabel = new JLabel("Trainee name ");
 		manageTrainee.add(nameLabel);
-		final JTextField name = new JTextField("");
+		JTextField name = new JTextField("");
 		manageTrainee.add(name);
-		
+
 		JLabel emailLabel = new JLabel("Email ");
 		manageTrainee.add(emailLabel);
 
-		final JTextField mail = new JTextField("");
+		JTextField mail = new JTextField("");
 		manageTrainee.add(mail);
 
 		JButton addBtn = new JButton("Add Trainee");
 		manageTrainee.add(addBtn);
-		final JTextField catalogName = new JTextField("");
-		manageTrainee.add(catalogName);
-		
+
 		addBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
 					Trainee  t = new Trainee(name.getText(),  mail.getText(), messenger, traineeCatalogInterface);
 					siteManager.addTrainee(t);
+					JOptionPane.showMessageDialog(manageTrainee, "The trainee has been added");
+					name.setText("");
+					mail.setText("");
 				} catch (NumberFormatException e1) {
 					JOptionPane.showMessageDialog(manageTrainee, e1.getMessage());
 				}catch (IllegalArgumentException e1) {
@@ -162,37 +173,67 @@ public class SiteManagerApp {
 		});
 		return manageTrainee;
 	}
-	
-	private static JPanel createManageCatalogPanel(Catalog catalog, final SiteManager siteManager, final Messenger messenger) {
-		final JPanel addCatalogPanel = new JPanel();
-		addCatalogPanel.setLayout(new GridLayout(1,5));
-		JLabel nameLabel = new JLabel("Name ");
-		addCatalogPanel.add(nameLabel);
-		final JTextField name = new JTextField("");
-		addCatalogPanel.add(name);
+	/**
+	 * Create panel used to manage catalog
+	 * @param catalog
+	 * @param trainerCatalog
+	 * @param messenger
+	 * @return JPanel
+	 */
+	private static JPanel createManageCatalogPanel(Catalog catalog, TrainerCatalogInterface trainerCatalog,  Messenger messenger) {
+		JPanel manageCatalogPanel = new JPanel();
+		manageCatalogPanel.setLayout(new GridLayout(1,2));
+		JLabel nameLabel = new JLabel("Trainer name ");
+		manageCatalogPanel.add(nameLabel);
+		JTextField name = new JTextField("");
+		manageCatalogPanel.add(name);
+
+		JLabel emailLabel = new JLabel("Email ");
+		manageCatalogPanel.add(emailLabel);
+
+		JTextField mail = new JTextField("");
+		manageCatalogPanel.add(mail);
+		JButton startBtn = new JButton("Start training");
+		manageCatalogPanel.add(startBtn);
+
+		JButton finishBtn = new JButton("Finish training");
+		manageCatalogPanel.add(finishBtn);
 		
-		JButton createBtn = new JButton("Create catalog");
-		
-		addCatalogPanel.add(createBtn);
-		
-		createBtn.addActionListener(new ActionListener() {
+		startBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					if(catalog == null){
-						catalog = new Catalog(name.getText(), messenger);
-					}else{
-						throw new IllegalStateException("Catalog already exists");
-					}
-					
+					Trainer trainer = new Trainer(name.getText(),  mail.getText(), trainerCatalog, messenger);
+					catalog.startTraining(trainer);
+					JOptionPane.showMessageDialog(manageCatalogPanel, "Training started");
+				} catch (NumberFormatException e1) {
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
 				}catch (IllegalArgumentException e1) {
-					JOptionPane.showMessageDialog(addCatalogPanel, e1.getMessage());
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
 				}catch (IllegalStateException e1) {
-					JOptionPane.showMessageDialog(addCatalogPanel, e1.getMessage());
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
 				}
 			}
 		});
-		return addCatalogPanel;
+
+		finishBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					catalog.stopTraining();
+					JOptionPane.showMessageDialog(manageCatalogPanel, "Training finished");
+				} catch (NumberFormatException e1) {
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
+				}catch (IllegalArgumentException e1) {
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
+				}catch (IllegalStateException e1) {
+					JOptionPane.showMessageDialog(manageCatalogPanel, e1.getMessage());
+				}
+			}
+		});
+		return manageCatalogPanel;
 	}
+
+
 
 }
